@@ -36,39 +36,39 @@ GOSUB cold_restart
 ' sstep = 0 RUN FULL; sstep = 1 single step; sstep = 2 run slower
 sstep = 0
 
-'Prof of concept Hello World program for your CPU to execute
-ram(0) = 4
-ram(1) = 0
-ram(2) = 5
-ram(3) = 128
-ram(4) = 8
-ram(5) = 7
-ram(6) = 0
-ram(7) = 2
-ram(8) = 2
-ram(9) = 79
-ram(10) = 27
-ram(11) = 44
-ram(12) = 13
-ram(13) = 72
-ram(14) = 0
-ram(15) = 7
-ram(16) = 68
-ram(17) = 1
-ram(18) = 0
-ram(128) = ASC("h")
-ram(129) = ASC("e")
-ram(130) = ASC("l")
-ram(131) = ASC("l")
-ram(132) = ASC("o")
-ram(133) = ASC(" ")
-ram(134) = ASC("w")
-ram(135) = ASC("o")
-ram(136) = ASC("r")
-ram(137) = ASC("l")
-ram(138) = ASC("d")
-ram(139) = ASC("!")
-ram(140) = ASC(CHR$(13))
+'Prof of concept Hello World program for our CPU to execute
+ram(0) = 4 ' lda $00
+ram(1) = 0 ' -> high byte
+ram(2) = 5 ' ldx $80
+ram(3) = 128 ' -> low byte
+ram(4) = 8 ' taxia -> a and x to IA as string pointer
+ram(5) = 7 ' ldz $00
+ram(6) = 0 ' -> z will be our counter
+ram(7) = 2 ' out $02
+ram(8) = 2 ' -> IO char out
+ram(9) = 79 ' inia -> increment string pointer
+ram(10) = 27 'inz -> increment ou counter
+ram(11) = 44 ' cpz $0C
+ram(12) = 13 ' -> compare z to 13
+ram(13) = 72 ' bne $0007
+ram(14) = 0 '  -> not equal we loop to $0007
+ram(15) = 7 '  -> otherwise we are done
+ram(16) = 68 ' jmp $0100
+ram(17) = 1 '  -> jump somewhere after the string
+ram(18) = 0 '  -> so we can let the CPU cycle over all the nop instruction in RAM before repeating our program
+ram(128) = ASC("h") ' This is our string
+ram(129) = ASC("e") ' This is our string
+ram(130) = ASC("l") ' This is our string
+ram(131) = ASC("l") ' This is our string
+ram(132) = ASC("o") ' This is our string
+ram(133) = ASC(" ") ' This is our string
+ram(134) = ASC("w") ' This is our string
+ram(135) = ASC("o") ' This is our string
+ram(136) = ASC("r") ' This is our string
+ram(137) = ASC("l") ' This is our string
+ram(138) = ASC("d") ' This is our string
+ram(139) = ASC("!") ' This is our string
+ram(140) = ASC(CHR$(13)) ' This is our string
 
 'This is our CPU main loop
 
