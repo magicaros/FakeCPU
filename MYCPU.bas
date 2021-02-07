@@ -6,8 +6,8 @@ SCREEN 2
 'Some Features
 ' 64Kb RAM
 ' integrated io port
-' 256 bytes of integrated Program Stack
-' 256 bytes of integrated General Purpose Stack
+' 256 Entries Program Stack
+' 256 Entries General Purpose Stack
 
 DIM ram(0 TO 65535) AS _UNSIGNED INTEGER
 DIM io AS _UNSIGNED INTEGER
@@ -24,35 +24,17 @@ DIM IX AS _UNSIGNED INTEGER
 DIM IY AS _UNSIGNED INTEGER
 DIM IZ AS _UNSIGNED INTEGER
 'Zeroing the RAM First
-GOSUB clr_ram
+
+irq_vector = 65280
+brk_vector = 65024
+rst_vector = 0
+
+GOSUB cold_restart
+
 
 'For Debuging Purpose...
 ' sstep = 0 RUN FULL; sstep = 1 single step; sstep = 2 run slower
 sstep = 0
-
-'Registers
-' Accumulators  8bits, 16bits
-A = 0
-IA = 0
-' 8 bits
-X = 0
-Y = 0
-Z = 0
-' 16 bits
-IX = 0
-IY = 0
-IZ = 0
-'Specials (Program counter, Program Stack Pointer, Stack Pointer)
-PC = 0
-PSP = 0
-SP = 0
-'FLAGS
-BRK = 0
-NEG = 0
-ZERO = 0
-CARRY = 0
-EQUAL = 0
-INTERUPT = 0
 
 'Prof of concept Hello World program for your CPU to execute
 ram(0) = 4
@@ -133,27 +115,27 @@ WHILE PC <= 65535
     IF opcode = 30 THEN GOSUB dcy
     IF opcode = 31 THEN GOSUB dcz
     ' add 8 bits add sub other reg with A
-    '    IF opcode = 32 THEN GOSUB adx
-    '    IF opcode = 33 THEN GOSUB sbx
-    '    IF opcode = 34 THEN GOSUB ady
-    '    IF opcode = 35 THEN GOSUB sby
-    '    IF opcode = 36 THEN GOSUB adz
-    '    IF opcode = 37 THEN GOSUB sbz
-    '    ' mul and div reg pair to 16bits
-    '    IF opcode = 38 THEN GOSUB axmia
-    '    IF opcode = 40 THEN GOSUB iada
+    IF opcode = 32 THEN GOSUB adx
+    IF opcode = 33 THEN GOSUB sbx
+    IF opcode = 34 THEN GOSUB ady
+    IF opcode = 35 THEN GOSUB sby
+    IF opcode = 36 THEN GOSUB adz
+    IF opcode = 37 THEN GOSUB sbz
+    '    ' mul and div
+    IF opcode = 38 THEN GOSUB axmia
+    IF opcode = 40 THEN GOSUB iada
     '    ' compare imediate
     IF opcode = 41 THEN GOSUB cpa
     IF opcode = 42 THEN GOSUB cpx
     IF opcode = 43 THEN GOSUB cpy
     IF opcode = 44 THEN GOSUB cpz
     ' compare absolute via ia
-    '    IF opcode = 45 THEN GOSUB cpaia
-    '    IF opcode = 46 THEN GOSUB cpxia
-    '    IF opcode = 47 THEN GOSUB cpyia
-    '    IF opcode = 48 THEN GOSUB cpzia
-    '   ' compare indexed via ia,a
-    '    IF opcode = 49 THEN GOSUB cpiaa
+    IF opcode = 45 THEN GOSUB cpaia
+    IF opcode = 46 THEN GOSUB cpxia
+    IF opcode = 47 THEN GOSUB cpyia
+    IF opcode = 48 THEN GOSUB cpzia
+    '   ' compare immediate indexed via ia,a
+    IF opcode = 49 THEN GOSUB cpiaa
     '    ' or immediate
     '    IF opcode = 50 THEN GOSUB ora
     '    IF opcode = 51 THEN GOSUB oria
@@ -169,28 +151,40 @@ WHILE PC <= 65535
     '    IF opcode = 58 THEN GOSUB anyz
     '    IF opcode = 59 THEN GOSUB aniaix
     ' Stack push an pull
-    '    IF opcode = 60 THEN GOSUB pha
-    '    IF opcode = 61 THEN GOSUB phx
-    '    IF opcode = 62 THEN GOSUB phy
-    '    IF opcode = 63 THEN GOSUB phz
-    '    IF opcode = 64 THEN GOSUB pla
-    '    IF opcode = 65 THEN GOSUB plx
-    '    IF opcode = 66 THEN GOSUB ply
-    '    IF opcode = 67 THEN GOSUB plz
+    IF opcode = 60 THEN GOSUB pha
+    IF opcode = 61 THEN GOSUB phx
+    IF opcode = 62 THEN GOSUB phy
+    IF opcode = 63 THEN GOSUB phz
+    IF opcode = 64 THEN GOSUB pla
+    IF opcode = 65 THEN GOSUB plx
+    IF opcode = 66 THEN GOSUB ply
+    IF opcode = 67 THEN GOSUB plz
     'branching
     IF opcode = 68 THEN GOSUB jmp
-    '    IF opcode = 69 THEN GOSUB jsr
-    '    IF opcode = 70 THEN GOSUB rts
-    '    IF opcode = 71 THEN GOSUB beq
+    IF opcode = 69 THEN GOSUB jsr
+    IF opcode = 70 THEN GOSUB rts
+    IF opcode = 71 THEN GOSUB beq
     IF opcode = 72 THEN GOSUB bne
-    '    IF opcode = 73 THEN GOSUB brz
-    '    IF opcode = 74 THEN GOSUB bnz
-    '    IF opcode = 75 THEN GOSUB ben
-    '    IF opcode = 76 THEN GOSUB bnn
-    '    IF opcode = 77 THEN GOSUB brk
-    '    IF opcode = 78 THEN GOSUB irq
-    ' probably more
+    IF opcode = 73 THEN GOSUB brz
+    IF opcode = 74 THEN GOSUB bnz
+    IF opcode = 75 THEN GOSUB brn
+    IF opcode = 76 THEN GOSUB bnn
+    IF opcode = 77 THEN GOSUB brk
+    IF opcode = 78 THEN GOSUB irq
+    ' Increment IA
     IF opcode = 79 THEN GOSUB inia
+    ' Clear and Set Flags
+    IF opcode = 80 THEN GOSUB cle
+    IF opcode = 81 THEN GOSUB see
+    IF opcode = 82 THEN GOSUB clz
+    IF ocpode = 83 THEN GOSUB sez
+    IF opcode = 84 THEN GOSUB cln
+    IF opcode = 85 THEN GOSUB sen
+    IF opcode = 86 THEN GOSUB clb
+    IF opcode = 87 THEN GOSUB seb
+    IF opcode = 88 THEN GOSUB cli
+    IF opcode = 89 THEN GOSUB sei
+
 
     IF PC >= 65535 THEN PC = 0
     IF sstep = 1 THEN
@@ -450,9 +444,313 @@ op2 = ram(PC + 2)
 PC = op1 * 256 + op2
 RETURN
 
+adx:
+X = X + A
+IF X >= 256 THEN X = X - 256: CARRY = 1
+PC = PC + 1
+RETURN
+
+sbx:
+X = X - A
+IF X <= -1 THEN X = X + 256: NEG = 1
+PC = PC + 1
+RETURN
+
+ady:
+Y = Y + A
+IF Y >= 256 THEN Y = Y - 256: CARRY = 1
+PC = PC + 1
+RETURN
+
+sby:
+Y = Y - A
+IF Y <= -1 THEN Y = Y + 256: NEG = 1
+PC = PC + 1
+RETURN
+
+adz:
+Z = Z + A
+IF Z >= 256 THEN Z = Z - 256: CARRY = 1
+PC = PC + 1
+RETURN
+
+sbz:
+Z = Z - A
+IF Z <= -1 THEN Z = Z + 256: NEG = 1
+PC = PC + 1
+RETURN
+
+'mul A by x result in IA
+axmia:
+IA = A * X
+PC = PC + 1
+RETURN
+
+'div IA by A result in IX
+iada:
+IX = IA / A
+PC = PC + 1
+RETURN
+
+cpaia:
+IF ram(IA) = A THEN EQUAL = 1
+IF ram(IA) <> A THEN EQUAL = 0
+PC = PC + 1
+RETURN
+
+cpxia:
+IF ram(IA) = X THEN EQUAL = 1
+IF ram(IA) <> X THEN EQUAL = 0
+PC = PC + 1
+RETURN
+
+cpyia:
+IF ram(IA) = Y THEN EQUAL = 1
+IF ram(IA) <> Y THEN EQUAL = 0
+PC = PC + 1
+RETURN
+
+cpzia:
+IF ram(IA) = Z THEN EQUAL = 1
+IF ram(IA) <> Z THEN EQUAL = 0
+PC = PC + 1
+RETURN
+
+cpiaa:
+op1 = ram(PC + 1)
+IF ram(IA + A) = op1 THEN EQUAL = 1
+IF ram(IA + A) <> op1 THEN EQUAL = 0
+PC = PC + 2
+RETURN
+
+pha:
+Stack(SP) = A
+SP = SP + 1
+PC = PC + 1
+RETURN
+
+phx:
+Stack(SP) = X
+SP = SP + 1
+PC = PC + 1
+RETURN
+
+phy:
+Stack(SP) = Y
+SP = SP + 1
+PC = PC + 1
+RETURN
+
+phz:
+Stack(SP) = Z
+SP = SP + 1
+PC = PC + 1
+RETURN
+
+pla:
+A = Stack(SP)
+SP = SP - 1
+PC = PC + 1
+RETURN
+
+plx:
+X = Stack(SP)
+SP = SP - 1
+PC = PC + 1
+RETURN
+
+ply:
+Y = Stack(SP)
+SP = SP - 1
+PC = PC + 1
+RETURN
+
+plz:
+Z = Stack(SP)
+SP = SP - 1
+PC = PC + 1
+RETURN
+
+jsr:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+addr = op1 * 256 + op2
+PC = PC + 3
+PStack(PSP) = PC
+PSP = PSP + 1
+PC = addr
+RETURN
+
+rts:
+PC = PStack(PSP)
+PStack(PSP) = 0
+PSP = PSP - 1
+RETURN
+
+beq:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+IZ = op1 * 256 + op2
+IF EQUAL = 1 THEN
+    PC = IZ
+END IF
+IF EQUAL = 0 THEN PC = PC + 3
+RETURN
+
+brz:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+IZ = op1 * 256 + op2
+IF ZERO = 0 THEN
+    PC = IZ
+END IF
+IF ZERO = 1 THEN PC = PC + 3
+RETURN
+
+bnz:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+IZ = op1 * 256 + op2
+IF ZERO = 1 THEN
+    PC = IZ
+END IF
+IF ZERO = 0 THEN PC = PC + 3
+RETURN
+
+brn:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+IZ = op1 * 256 + op2
+IF NEG = 0 THEN
+    PC = IZ
+END IF
+IF NEG = 1 THEN PC = PC + 3
+RETURN
+
+bnn:
+op1 = ram(PC + 1)
+op2 = ram(PC + 2)
+IZ = op1 * 256 + op2
+IF NEG = 1 THEN
+    PC = IZ
+END IF
+IF NEG = 0 THEN PC = PC + 3
+RETURN
+
+brk:
+PC = brk_vector
+RETURN
+
+irq:
+PC = irq_vector
+RETURN
+
 'This Function initialize the RAM by Zeroing it.
 clr_ram:
 FOR C = 0 TO 65535
     ram(C) = 0
 NEXT C
 RETURN
+
+clr_Pstack:
+FOR C = 0 TO 255
+    PStack(C) = 0
+NEXT C
+RETURN
+
+clr_stack:
+FOR C = 0 TO 255
+    Stack(C) = 0
+NEXT C
+RETURN
+
+cle:
+EQUAL = 0
+PC = PC + 1
+RETURN
+
+see:
+EQUAL = 1
+PC = PC + 1
+RETURN
+
+cli:
+INTERUPT = 0
+PC = PC + 1
+RETURN
+
+sei:
+INTERUPT = 1
+PC = PC + 1
+RETURN
+
+clz:
+ZERO = 0
+PC = PC + 1
+RETURN
+
+sez:
+ZERO = 1
+PC = PC + 1
+RETURN
+
+cln:
+NEG = 0
+PC = PC + 1
+RETURN
+
+sen:
+NEG = 1
+PC = PC + 1
+RETURN
+
+clb:
+BRK = 0
+PC = PC + 1
+
+seb:
+BRK = 1
+PC = PC + 1
+RETURN
+
+'This clear the registers, and flags
+clr_regf:
+'Registers
+' Accumulators  8bits, 16bits
+A = 0
+IA = 0
+' 8 bits
+X = 0
+Y = 0
+Z = 0
+' 16 bits
+IX = 0
+IY = 0
+IZ = 0
+'Specials (Program counter, Program Stack Pointer, Stack Pointer)
+PC = rst_vector
+PSP = 0
+SP = 0
+'FLAGS
+BRK = 0
+NEG = 0
+ZERO = 0
+CARRY = 0
+EQUAL = 0
+INTERUPT = 0
+RETURN
+
+'This is a cold start or hard reset (clear the ram, registers, Program Stack and Stack)
+cold_restart:
+GOSUB clr_regf
+GOSUB clr_Pstack
+GOSUB clr_stack
+GOSUB clr_ram
+RETURN
+
+'This is a warm start or soft reset (only clean registers and flags, Program Stack but not Stack)
+warm_restart:
+GOSUB clr_regf
+GOSUB clr_Pstack
+RETURN
+
