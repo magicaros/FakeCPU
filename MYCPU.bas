@@ -37,38 +37,38 @@ GOSUB cold_restart
 sstep = 0
 
 'Prof of concept Hello World program for our CPU to execute
-ram(0) = 4 ' lda $00
-ram(1) = 0 ' -> high byte
-ram(2) = 5 ' ldx $80
-ram(3) = 128 ' -> low byte
-ram(4) = 8 ' taxia -> a and x to IA as string pointer
-ram(5) = 7 ' ldz $00
-ram(6) = 0 ' -> z will be our counter
-ram(7) = 2 ' out $02
-ram(8) = 2 ' -> IO char out
-ram(9) = 79 ' inia -> increment string pointer
-ram(10) = 27 'inz -> increment ou counter
-ram(11) = 44 ' cpz $0C
-ram(12) = 13 ' -> compare z to 13
-ram(13) = 72 ' bne $0007
-ram(14) = 0 '  -> not equal we loop to $0007
-ram(15) = 7 '  -> otherwise we are done
-ram(16) = 68 ' jmp $0100
-ram(17) = 1 '  -> jump somewhere after the string
-ram(18) = 0 '  -> so we can let the CPU cycle over all the nop instruction in RAM before repeating our program
-ram(128) = ASC("h") ' This is our string
-ram(129) = ASC("e") ' This is our string
-ram(130) = ASC("l") ' This is our string
-ram(131) = ASC("l") ' This is our string
-ram(132) = ASC("o") ' This is our string
-ram(133) = ASC(" ") ' This is our string
-ram(134) = ASC("w") ' This is our string
-ram(135) = ASC("o") ' This is our string
-ram(136) = ASC("r") ' This is our string
-ram(137) = ASC("l") ' This is our string
-ram(138) = ASC("d") ' This is our string
-ram(139) = ASC("!") ' This is our string
-ram(140) = ASC(CHR$(13)) ' This is our string
+ram(0) = 4 '             ' lda $00
+ram(1) = 0 '             ' -> high byte
+ram(2) = 5 '             ' ldx $80
+ram(3) = 128 '           ' -> low byte
+ram(4) = 8 '             ' taxia -> a and x to IA as string pointer
+ram(5) = 7 '             ' ldz $00
+ram(6) = 0 '             ' -> z will be our counter
+ram(7) = 2 '             '  out $02
+ram(8) = 2 '             ' -> IO char out
+ram(9) = 79 '            ' inia -> increment string pointer
+ram(10) = 27 '           ' inz -> increment our counter
+ram(11) = 44 '           ' cpz $0C
+ram(12) = 13 '           ' -> compare z to 13
+ram(13) = 72 '           ' bne $0007
+ram(14) = 0 '            ' -> not equal we loop to $0007
+ram(15) = 7 '            ' -> otherwise we are done
+ram(16) = 68 '           ' jmp $0100
+ram(17) = 1 '            ' -> jump somewhere after the string
+ram(18) = 0 '            ' -> so we can let the CPU cycle over all the nop instruction in RAM before repeating our program
+ram(128) = ASC("h") '    ' This is our string char 1
+ram(129) = ASC("e") '    ' This is our string char 2
+ram(130) = ASC("l") '    ' This is our string char 3
+ram(131) = ASC("l") '    ' This is our string char 4
+ram(132) = ASC("o") '    ' This is our string char 5
+ram(133) = ASC(" ") '    ' This is our string char 6
+ram(134) = ASC("w") '    ' This is our string char 7
+ram(135) = ASC("o") '    ' This is our string char 8
+ram(136) = ASC("r") '    ' This is our string char 9
+ram(137) = ASC("l") '    ' This is our string char 10
+ram(138) = ASC("d") '    ' This is our string char 11
+ram(139) = ASC("!") '    ' This is our string char 12
+ram(140) = ASC(CHR$(13)) ' This is our string char 13 (carriage return)
 
 'This is our CPU main loop
 
@@ -121,10 +121,10 @@ WHILE PC <= 65535
     IF opcode = 35 THEN GOSUB sby
     IF opcode = 36 THEN GOSUB adz
     IF opcode = 37 THEN GOSUB sbz
-    '    ' mul and div
+    ' mul and div
     IF opcode = 38 THEN GOSUB axmia
     IF opcode = 40 THEN GOSUB iada
-    '    ' compare imediate
+    ' compare imediate
     IF opcode = 41 THEN GOSUB cpa
     IF opcode = 42 THEN GOSUB cpx
     IF opcode = 43 THEN GOSUB cpy
@@ -134,22 +134,22 @@ WHILE PC <= 65535
     IF opcode = 46 THEN GOSUB cpxia
     IF opcode = 47 THEN GOSUB cpyia
     IF opcode = 48 THEN GOSUB cpzia
-    '   ' compare immediate indexed via ia,a
+    ' compare immediate indexed via ia,a
     IF opcode = 49 THEN GOSUB cpiaa
-    '    ' or immediate
-    '    IF opcode = 50 THEN GOSUB ora
-    '    IF opcode = 51 THEN GOSUB oria
-    '    ' and immediate
-    '    IF opcode = 52 THEN GOSUB ana
-    '    IF opcode = 53 THEN GOSUB ania
+    ' or immediate
+    IF opcode = 50 THEN GOSUB ora
+    IF opcode = 51 THEN GOSUB oria
+    ' and immediate
+    IF opcode = 52 THEN GOSUB ana
+    IF opcode = 53 THEN GOSUB ania
     '    ' or reg pair
-    '    IF opcode = 54 THEN GOSUB orax
-    '    IF opcode = 55 THEN GOSUB oryz
-    '    IF opcode = 56 THEN GOSUB oriaix
+    IF opcode = 54 THEN GOSUB orax
+    IF opcode = 55 THEN GOSUB oryz
+    IF opcode = 56 THEN GOSUB oriaix
     '    ' and reg pair
-    '    IF opcode = 57 THEN GOSUB anax
-    '    IF opcode = 58 THEN GOSUB anyz
-    '    IF opcode = 59 THEN GOSUB aniaix
+    IF opcode = 57 THEN GOSUB anax
+    IF opcode = 58 THEN GOSUB anyz
+    IF opcode = 59 THEN GOSUB aniaix
     ' Stack push an pull
     IF opcode = 60 THEN GOSUB pha
     IF opcode = 61 THEN GOSUB phx
@@ -184,9 +184,11 @@ WHILE PC <= 65535
     IF opcode = 87 THEN GOSUB seb
     IF opcode = 88 THEN GOSUB cli
     IF opcode = 89 THEN GOSUB sei
+    ' Probably more ...
 
-
+    ' loop the PC on overflow
     IF PC >= 65535 THEN PC = 0
+    ' are we debuging?
     IF sstep = 1 THEN
         LOCATE 1, 1
         PRINT "PC= "; HEX$(PC); " A= "; HEX$(A); " X= "; HEX$(X); " Y= "; HEX$(Y); " Z= "; HEX$(Z)
@@ -194,11 +196,8 @@ WHILE PC <= 65535
         PRINT "PSP="; HEX$(PSP); " SP="; HEX$(SP); "PStack="; HEX$(PStack(PSP)); " FLAGS:"; CARRY; ZERO; EQUAL; INTERUPT; BRK; NEG
         K$ = "": WHILE K$ = "": K$ = INKEY$: WEND
     END IF
+    ' or running slower?
     IF sstep = 2 THEN
-        '    LOCATE 1, 1
-        '    PRINT "PC= "; HEX$(PC); " A= "; HEX$(A); " X= "; HEX$(X); " Y= "; HEX$(Y); " Z= "; HEX$(Z)
-        '    PRINT "IA= "; HEX$(IA); " IX= "; HEX$(IX); " IY= "; HEX$(IY); " IZ= "; HEX$(IZ)
-        '    PRINT "PSP="; HEX$(PSP); " SP="; HEX$(SP); "PStack="; HEX$(PStack(PSP)); " FLAGS:"; CARRY; ZERO; EQUAL; INTERUPT; BRK; NEG
         FOR i = 0 TO 5000: NEXT i
     END IF
 WEND
@@ -711,6 +710,67 @@ PC = PC + 1
 seb:
 BRK = 1
 PC = PC + 1
+RETURN
+
+ora:
+result = A OR ram(PC + 1)
+A = result
+PC = PC + 2
+RETURN
+
+ana:
+result = A AND ram(PC + 1)
+A = result
+PC = PC + 2
+RETURN
+
+oria:
+addr = ram(PC + 1) * 256 + ram(PC + 2)
+result = IA OR addr
+IA = result
+PC = PC + 3
+RETURN
+
+ania:
+addr = ram(PC + 1) * 256 + ram(PC + 2)
+result = IA AND addr
+IA = result
+PC = PC + 3
+RETURN
+
+orax:
+result = A OR X
+A = result
+PC = PC + 1
+RETURN
+
+oryz:
+result = Y OR Z
+A = result
+PC = PC + 1
+RETURN
+
+oriaix:
+result = IA OR IX
+IA = result
+PC = PC + 1
+RETURN
+
+anax:
+result = A AND X
+A = result
+PC = PC + 1
+RETURN
+
+anyz:
+result = Y AND Z
+A = result
+PC = PC + 1
+RETURN
+
+aniaix:
+result = IA AND IX
+IA = result
 RETURN
 
 'This clear the registers, and flags
