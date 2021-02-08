@@ -1,7 +1,7 @@
 'Fictional CPU writen in BASIC because why not...
 'Don't ask, i was bored...
 
-SCREEN 2
+SCREEN 2 'on legacy qbasic DOS it's CGA high res (640*200*2) on qb64 it's a window of the same properties
 
 'Some Features
 ' 64Kb RAM
@@ -44,11 +44,11 @@ ram(4) = 8 '             ' taxia -> a and x to IA as string pointer
 ram(5) = 7 '             ' ldz $00
 ram(6) = 0 '             ' -> z will be our counter
 ram(7) = 2 '             '  out $02
-ram(8) = 2 '             ' -> IO char out
+ram(8) = 2 '             ' -> IO port 2 is char out
 ram(9) = 79 '            ' inia -> increment string pointer
 ram(10) = 27 '           ' inz -> increment our counter
 ram(11) = 44 '           ' cpz $0C
-ram(12) = 13 '           ' -> compare z to 13
+ram(12) = 13 '           ' -> compare z to $0C (13 in decimal, that is the number of character in our string)
 ram(13) = 72 '           ' bne $0007
 ram(14) = 0 '            ' -> not equal we loop to $0007
 ram(15) = 7 '            ' -> otherwise we are done
@@ -71,14 +71,14 @@ ram(139) = ASC("!") '    ' This is our string char 12
 ram(140) = ASC(CHR$(13)) ' This is our string char 13 (carriage return)
 ram(141) = ASC("i") '    ' This is only reached when irq happend
 ram(65020) = 89 '        ' set interupt
-ram(65021) = 68 '        ' jmp $0000
-ram(65022) = 0 '
-ram(65023) = 0 '
-ram(65024) = 3 '         ' HLT
-ram(65280) = 2 '         ' IO output char
+ram(65021) = 68 '        ' jmp $0000  <= return from interupt here and jump back to $0000 to avoid brk_vector execution
+ram(65022) = 0 '         '
+ram(65023) = 0 '         '
+ram(65024) = 3 '         ' HLT  (this is our brk_vector, it activate with F2 key, in this case we use it to HALT the cpu & end the emulation)
+ram(65280) = 2 '         ' IO 2 is char out (if an interupt occurs output i, we end here when interrupt is set)
 ram(65281) = 2 '         '
 ram(65282) = 79 '        ' increment ia
-ram(65284) = 70 '        ' rts
+ram(65284) = 70 '        ' rts (return from subroutine because return form interrupt is unimplemented)
 
 'This is our CPU main loop
 
