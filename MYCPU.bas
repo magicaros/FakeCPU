@@ -11,7 +11,7 @@ SCREEN 2
 
 DIM ram(0 TO 65535) AS _UNSIGNED INTEGER
 DIM io AS _UNSIGNED INTEGER
-DIM PStack(0 TO 255) AS _UNSIGNED _BYTE
+DIM PStack(0 TO 255) AS _UNSIGNED INTEGER
 DIM Stack(0 TO 255) AS _UNSIGNED _BYTE
 
 'Some Registers 4x8bits, 4x16bits
@@ -29,12 +29,11 @@ irq_vector = 65280
 brk_vector = 65024
 rst_vector = 0
 
-GOSUB cold_restart
-
-
 'For Debuging Purpose...
-' sstep = 0 RUN FULL; sstep = 1 single step; sstep = 2 run slower
-sstep = 0
+' sstep = 0 RUN FULL; sstep = 1 single step; sstep = 2 show cpu info ; sstep= 3 run slower ; sstep= 4 slower with info
+sstep = 2
+
+GOSUB cold_restart
 
 'Prof of concept Hello World program for our CPU to execute
 ram(0) = 4 '             ' lda $00
@@ -53,9 +52,10 @@ ram(12) = 13 '           ' -> compare z to 13
 ram(13) = 72 '           ' bne $0007
 ram(14) = 0 '            ' -> not equal we loop to $0007
 ram(15) = 7 '            ' -> otherwise we are done
-ram(16) = 68 '           ' jmp $0100
-ram(17) = 1 '            ' -> jump somewhere after the string
-ram(18) = 0 '            ' -> so we can let the CPU cycle over all the nop instruction in RAM before repeating our program
+ram(16) = 80 '           ' cle -> clear the equal flag
+ram(17) = 68 '           ' jmp $0100
+ram(18) = 1 '            ' -> jump somewhere after the string
+ram(19) = 0 '            ' -> so we can let the CPU cycle over all the nop instruction in RAM before repeating our program
 ram(128) = ASC("h") '    ' This is our string char 1
 ram(129) = ASC("e") '    ' This is our string char 2
 ram(130) = ASC("l") '    ' This is our string char 3
@@ -69,10 +69,26 @@ ram(137) = ASC("l") '    ' This is our string char 10
 ram(138) = ASC("d") '    ' This is our string char 11
 ram(139) = ASC("!") '    ' This is our string char 12
 ram(140) = ASC(CHR$(13)) ' This is our string char 13 (carriage return)
+ram(141) = ASC("i") '    ' This is only reached when irq happend
+ram(65020) = 89 '        ' set interupt
+ram(65021) = 68 '        ' jmp $0000
+ram(65022) = 0 '
+ram(65023) = 0 '
+ram(65024) = 3 '         ' HLT
+ram(65280) = 2 '         ' IO output char
+ram(65281) = 2 '         '
+ram(65282) = 79 '        ' increment ia
+ram(65284) = 70 '        ' rts
 
 'This is our CPU main loop
 
 WHILE PC <= 65535
+    ON KEY(1) GOSUB warm_restart
+    ON KEY(2) GOSUB brk
+    KEY(1) ON
+    KEY(2) ON
+    IF intq = 1 THEN intq = 0: GOSUB irq
+
     opcode = ram(PC)
     ' NOP, IN ia, OUT ia, HALT
     IF opcode = 0 THEN GOSUB nop
@@ -190,15 +206,37 @@ WHILE PC <= 65535
     IF PC >= 65535 THEN PC = 0
     ' are we debuging?
     IF sstep = 1 THEN
+        row = CSRLIN ' Save current print cursor row.
+        col = POS(0) ' Save current print cursor column
         LOCATE 1, 1
         PRINT "PC= "; HEX$(PC); " A= "; HEX$(A); " X= "; HEX$(X); " Y= "; HEX$(Y); " Z= "; HEX$(Z)
-        PRINT "IA= "; HEX$(IA); " IX= "; HEX$(IX); " IY= "; HEX$(IY); " IZ= "; HEX$(IZ)
-        PRINT "PSP="; HEX$(PSP); " SP="; HEX$(SP); "PStack="; HEX$(PStack(PSP)); " FLAGS:"; CARRY; ZERO; EQUAL; INTERUPT; BRK; NEG
+        PRINT "IA= "; HEX$(IA); " IX= "; HEX$(IX); " IY= "; HEX$(IY); " IZ= "; HEX$(IZ); " PSP="; HEX$(PSP); " SP="; HEX$(SP); " PStack="; HEX$(PStack(PSP))
+        PRINT " FLAGS C="; CARRY; " Z="; ZERO; "E="; EQUAL; "I="; intq; "B="; BRK; "N="; NEG
         K$ = "": WHILE K$ = "": K$ = INKEY$: WEND
+        LOCATE row, col
+    END IF
+    IF sstep = 2 THEN
+        row = CSRLIN ' Save current print cursor row.
+        col = POS(0) ' Save current print cursor column.
+        LOCATE 1, 1
+        PRINT "PC= "; HEX$(PC); " A= "; HEX$(A); " X= "; HEX$(X); " Y= "; HEX$(Y); " Z= "; HEX$(Z)
+        PRINT "IA= "; HEX$(IA); " IX= "; HEX$(IX); " IY= "; HEX$(IY); " IZ= "; HEX$(IZ); " PSP="; HEX$(PSP); " SP="; HEX$(SP); " PStack="; HEX$(PStack(PSP))
+        PRINT " FLAGS C="; CARRY; " Z="; ZERO; "E="; EQUAL; "I="; intq; "B="; BRK; "N="; NEG
+        LOCATE row, col
     END IF
     ' or running slower?
-    IF sstep = 2 THEN
+    IF sstep = 3 THEN
         FOR i = 0 TO 5000: NEXT i
+    END IF
+    IF sstep = 4 THEN
+        row = CSRLIN ' Save current print cursor row.
+        col = POS(0) ' Save current print cursor column.
+        LOCATE 1, 1
+        PRINT "PC= "; HEX$(PC); " A= "; HEX$(A); " X= "; HEX$(X); " Y= "; HEX$(Y); " Z= "; HEX$(Z)
+        PRINT "IA= "; HEX$(IA); " IX= "; HEX$(IX); " IY= "; HEX$(IY); " IZ= "; HEX$(IZ); " PSP="; HEX$(PSP); " SP="; HEX$(SP); " PStack="; HEX$(PStack(PSP))
+        PRINT " FLAGS C="; CARRY; " Z="; ZERO; "E="; EQUAL; "I="; intq; "B="; BRK; "N="; NEG
+        FOR i = 0 TO 5000: NEXT i
+        LOCATE row, col
     END IF
 WEND
 END
@@ -228,7 +266,7 @@ io = ram(PC + 1)
 IF io = 1 THEN
 END IF
 IF io = 2 THEN
-    S = ram(IA): PRINT CHR$(S);
+    s = ram(IA): PRINT CHR$(s);
 END IF
 PC = PC + 2
 io = 0
@@ -445,37 +483,37 @@ RETURN
 
 adx:
 X = X + A
-IF X >= 256 THEN X = X - 256: CARRY = 1
+IF X >= 255 THEN X = X - 255: CARRY = 1
 PC = PC + 1
 RETURN
 
 sbx:
 X = X - A
-IF X <= -1 THEN X = X + 256: NEG = 1
+IF X <= -1 THEN X = X + 255: NEG = 1
 PC = PC + 1
 RETURN
 
 ady:
 Y = Y + A
-IF Y >= 256 THEN Y = Y - 256: CARRY = 1
+IF Y >= 255 THEN Y = Y - 255: CARRY = 1
 PC = PC + 1
 RETURN
 
 sby:
 Y = Y - A
-IF Y <= -1 THEN Y = Y + 256: NEG = 1
+IF Y <= -1 THEN Y = Y + 255: NEG = 1
 PC = PC + 1
 RETURN
 
 adz:
 Z = Z + A
-IF Z >= 256 THEN Z = Z - 256: CARRY = 1
+IF Z >= 255 THEN Z = Z - 255: CARRY = 1
 PC = PC + 1
 RETURN
 
 sbz:
 Z = Z - A
-IF Z <= -1 THEN Z = Z + 256: NEG = 1
+IF Z <= -1 THEN Z = Z + 255: NEG = 1
 PC = PC + 1
 RETURN
 
@@ -637,10 +675,16 @@ IF NEG = 0 THEN PC = PC + 3
 RETURN
 
 brk:
+IF BRK = 1 THEN PC = PC + 1
+PStack(PSP) = PC
+PSP = PSP + 1
 PC = brk_vector
 RETURN
 
 irq:
+intq = 0
+PStack(PSP) = PC
+PSP = PSP + 1
 PC = irq_vector
 RETURN
 
@@ -674,12 +718,12 @@ PC = PC + 1
 RETURN
 
 cli:
-INTERUPT = 0
+intq = 0
 PC = PC + 1
 RETURN
 
 sei:
-INTERUPT = 1
+intq = 1
 PC = PC + 1
 RETURN
 
@@ -797,11 +841,19 @@ NEG = 0
 ZERO = 0
 CARRY = 0
 EQUAL = 0
-INTERUPT = 0
+intq = 0
+col = 1
 RETURN
 
 'This is a cold start or hard reset (clear the ram, registers, Program Stack and Stack)
 cold_restart:
+CLS
+IF sstep = 0 THEN row = 1
+IF sstep = 1 THEN row = 4
+IF sstep = 2 THEN row = 4
+IF sstep = 3 THEN row = 1
+IF sstep = 4 THEN row = 4
+'LOCATE row, col
 GOSUB clr_regf
 GOSUB clr_Pstack
 GOSUB clr_stack
@@ -810,7 +862,19 @@ RETURN
 
 'This is a warm start or soft reset (only clean registers and flags, Program Stack but not Stack)
 warm_restart:
+CLS
+IF sstep = 0 THEN row = 1
+IF sstep = 1 THEN row = 4
+IF sstep = 2 THEN row = 4
+IF sstep = 3 THEN row = 1
+IF sstep = 4 THEN row = 4
+'LOCATE row, col
 GOSUB clr_regf
 GOSUB clr_Pstack
+RETURN
+
+intr:
+IF intq = 1 THEN GOSUB irq
+IF intq = 0 THEN RETURN
 RETURN
 
