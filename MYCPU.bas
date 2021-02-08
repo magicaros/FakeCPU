@@ -873,8 +873,3 @@ GOSUB clr_regf
 GOSUB clr_Pstack
 RETURN
 
-intr:
-IF intq = 1 THEN GOSUB irq
-IF intq = 0 THEN RETURN
-RETURN
-
