@@ -23,7 +23,6 @@ DIM IA AS _UNSIGNED INTEGER
 DIM IX AS _UNSIGNED INTEGER
 DIM IY AS _UNSIGNED INTEGER
 DIM IZ AS _UNSIGNED INTEGER
-'Zeroing the RAM First
 
 irq_vector = 65280
 brk_vector = 65024
@@ -78,7 +77,7 @@ ram(65024) = 3 '         ' HLT  (this is our brk_vector, it activate with F2 key
 ram(65280) = 2 '         ' IO 2 is char out (if an interupt occurs output i, we end here when interrupt is set)
 ram(65281) = 2 '         '
 ram(65282) = 79 '        ' increment ia
-ram(65284) = 70 '        ' rts (return from subroutine because return form interrupt is unimplemented)
+ram(65284) = 90 '        ' rti
 
 'This is our CPU main loop
 
@@ -201,6 +200,7 @@ WHILE PC <= 65535
     IF opcode = 88 THEN GOSUB cli
     IF opcode = 89 THEN GOSUB sei
     ' Probably more ...
+    IF opcode = 90 THEN GOSUB rti
 
     ' loop the PC on overflow
     IF PC >= 65535 THEN PC = 0
@@ -682,7 +682,6 @@ PC = brk_vector
 RETURN
 
 irq:
-intq = 0
 PStack(PSP) = PC
 PSP = PSP + 1
 PC = irq_vector
@@ -815,6 +814,11 @@ RETURN
 aniaix:
 result = IA AND IX
 IA = result
+RETURN
+
+rti:
+GOSUB cli
+GOSUB rts
 RETURN
 
 'This clear the registers, and flags
